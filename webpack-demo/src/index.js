@@ -1,6 +1,7 @@
 // import your function
 import myName from './myName';
 import './style.css';
+// !!credits!! icon author : https://www.flaticon.com/packs/tourism-16138565
 import Icon from './information.png';
 import Data from './data.xml';
 import Notes from './data.csv';
