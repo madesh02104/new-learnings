@@ -1,0 +1,13 @@
+@font-face {
+  font-family: 'MyFont';
+  src: url('./GaMaamli-Regular.ttf') format('ttf');
+  font-weight: 600;
+  font-style: normal;
+}
+
+.hello {
+    color: red;
+    background: url('./information.png');
+    font-family: "MyFont";
+    font-size: large;
+}
