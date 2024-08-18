@@ -1,9 +1,11 @@
+require('dotenv').config();
+
 const img = document.querySelector('#giphy-image');
 const changeBtn = document.querySelector('.change-btn');
 const searchBtn = document.querySelector('.search-btn');
 const searchBox = document.querySelector('#search-box');
 
-const apiKey = '8AdBqSYyW7wooodr8NwGdiyROd0G1wQp';
+const apiKey = process.env.GIPHY_API_KEY;
 let currentSearch = 'cats'; 
 
 function fetchGif(searchTerm = 'cats') {
