@@ -2,21 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Document</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Demo</title>
 </head>
 <body>
-  <h1>Yea I know... Nothing special here.Just got to know how to fetch API...from Giphy...</h1>
-  <img src="#">
+  <input type="text" placeholder="Search for a GIF" id="search-box">
+  <button class="search-btn">Search</button>
+  <br><br>
+  <img src="#" alt="Giphy Image" id="giphy-image">
+  <br><br>
+  <button class="change-btn">Change Gif</button>
+  <br><br>
+  <h1>Yea I know... Nothing special here. Just got to know how to fetch API...from Giphy...</h1>
 
-  <script>
-    const img = document.querySelector('img');
-    fetch('https://api.giphy.com/v1/gifs/translate?api_key=8AdBqSYyW7wooodr8NwGdiyROd0G1wQp&s=cats', {mode: 'cors'})
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(response) {
-        img.src = response.data.images.original.url;
-      });
-  </script>  
+  <script src="script.js"></script>
 </body>
 </html>
