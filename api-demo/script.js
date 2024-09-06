@@ -1,11 +1,9 @@
-require('dotenv').config();
-
 const img = document.querySelector('#giphy-image');
 const changeBtn = document.querySelector('.change-btn');
 const searchBtn = document.querySelector('.search-btn');
 const searchBox = document.querySelector('#search-box');
 
-const apiKey = process.env.GIPHY_API_KEY;
+let apiKey = '8AdBqSYyW7wooodr8NwGdiyROd0G1wQp';
 let currentSearch = 'cats'; 
 
 function fetchGif(searchTerm = 'cats') {
@@ -13,6 +11,7 @@ function fetchGif(searchTerm = 'cats') {
     .then(response => response.json())
     .then(response => {
       if (response.data.length !== 0) {
+        console.log(response.data.images.original.url);
         img.src = response.data.images.original.url;
       } else {
         handleNoGifFound();
