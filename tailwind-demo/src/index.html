@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS Experiment</title>
+    <link href="output.css" rel="stylesheet">
+</head>
+
+<body class="bg-slate-400 flex flex-col">
+    <nav class="h-[8vh] bg-slate-700 flex gap-1 justify-between items-center">
+        <div>
+            <h1 class="text-[#fff] font-bold text-3xl p-2">Tailwind</h1>
+        </div>
+        <div class="mr-2 text-[#fff] flex gap-16">
+            <p class="p-1 rounded border-2 border-transparent hover:border-slate-400">About Us</p>
+            <p class="p-1 rounded border-2 border-transparent hover:border-slate-400">Services</p>
+            <p class="p-1 rounded border-2 border-transparent hover:border-slate-400">Profiles</p>
+        </div>
+    </nav>
+
+    <main class="h-[84vh] flex gap-4 p-4">
+        <div class="w-[60%] flex flex-col gap-4">
+            <section class="bg-slate-800 text-[#fff] p-2 rounded">
+                <p>This project is carried out to get used to tailwind and implement it in upcoming projects. Learning
+                    it olely by going through the documentation of the tailwind page itself. Working with it is little
+                    easy as i already know a handfull of CSS. </p>
+            </section>
+            <h1 class="font-bold text-3xl text-[#000] m-auto">Grid layout</h1>
+            <article class="grid grid-cols-3 gap-2 gap-y-10 my-4">
+                <div class="bg-slate-800 h-[8rem] w-[8rem]"></div>
+                <div class="bg-slate-800 h-[8rem] w-[8rem]"></div>
+                <div class="bg-slate-800 h-[8rem] w-[8rem]"></div>
+                <div class="bg-slate-800 h-[8rem] w-[8rem]"></div>
+                <div class="bg-slate-800 h-[8rem] w-[8rem]"></div>
+                <div class="bg-slate-800 h-[8rem] w-[8rem]"></div>
+            </article>
+        </div>
+
+        <aside class="w-[40%] bg-slate-800 p-2 text-white">
+            <form class="flex flex-col gap-2">
+                <label for="name">Name: </label>
+                <input type="text" name="name" id="name" class="rounded">
+
+                <label for="age">Age:</label>
+                <input type="number" id="age" class="rounded">
+
+                <div class="flex flex-col gap-1">
+                    <label for="gender">Gender:</label>
+                    <div>
+                        <input type="checkbox" name="male" id="male" class="rounded inline-block">
+                        <label for="male">Male</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" name="female" id="female" class="rounded">
+                        <label for="female">Female</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" name="notsay" id="notsay" class="rounded">
+                        <label for="notsay">Prefer not to say</label>
+                    </div>
+                </div>
+
+                <label for="country">Country:</label>
+                <input type="text" class="rounded">
+
+                <label for="email">Email:</label>
+                <input type="email" class="rounded">
+
+                <label for="mobile">Contact:</label>
+                <input type="number" class="rounded">
+
+            </form>
+        </aside>
+    </main>
+
+    <footer class="h-[8vh] bg-slate-700 flex justify-center items-center text-white">
+        <p>All rights reserved</p>
+    </footer>
+
+</body>
+
+</html>
