@@ -1,42 +1,191 @@
-#root {
-  max-width: 1280px;
+.app {
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  padding: var(--spacing-xl);
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.app-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.025em;
+}
+
+.app-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-large);
+  font-weight: 400;
+}
+
+.app-content {
+  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+/* Movie Input Section */
+.movie-input-section {
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.movie-input-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.movie-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  align-items: center;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.movie-input-row {
+  display: flex;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: 500px;
+}
+
+.movie-input-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.movie-input-row input[type="text"] {
+  flex: 2;
+}
+
+.movie-input-row input[type="number"] {
+  flex: 1;
+  text-align: center;
+}
+
+/* Movie List Section */
+.movie-list-section {
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.movie-list-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.movie-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.movie-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-light);
+  transition: all 0.2s ease;
+}
+
+.movie-item:hover {
+  border-color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.movie-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.movie-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-large);
+}
+
+.movie-rating {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+.movie-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.delete-button {
+  background-color: #dc2626;
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app {
+    padding: var(--spacing-md);
   }
-  to {
-    transform: rotate(360deg);
+  
+  .movie-input-row {
+    flex-direction: column;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  
+  .movie-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .movie-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .movie-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

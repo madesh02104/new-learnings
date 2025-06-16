@@ -4,10 +4,16 @@ import { MovieInput } from "./components/MovieInput";
 
 function App() {
   return (
-    <>
-      <MovieInput />
-      <MovieList />
-    </>
+    <div className="app">
+      <div className="app-header">
+        <h1 className="app-title">Movie Collection</h1>
+        <p className="app-subtitle">Manage your favorite films</p>
+      </div>
+      <div className="app-content">
+        <MovieInput />
+        <MovieList />
+      </div>
+    </div>
   );
 }
 
