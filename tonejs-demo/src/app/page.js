@@ -26,16 +26,23 @@ function usePianoVoices() {
   return voiceRef.current;
 }
 
-const genNotes = (startNote, count) =>
-  Array.from({ length: count }, (_, i) =>
-    Tone.Frequency(startNote).transpose(i).toNote()
-  );
+function genNotes(startNote, count) {
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    const freq = Tone.Frequency(startNote);
+    const transposed = freq.transpose(i);
+    const noteName = transposed.toNote();
+    result.push(noteName);
+  }
+  return result;
+}
 
 const topRowKeys = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
 const midRowKeys = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const botRowKeys = ["z", "x", "c", "v", "b", "n", "m"];
 
 const topRowNotes = genNotes("C6", topRowKeys.length);
+console.log("Top row Notes: ", topRowNotes);
 const midRowNotes = genNotes("C5", midRowKeys.length);
 const botRowNotes = genNotes("C4", botRowKeys.length);
 
@@ -44,6 +51,8 @@ const keyToNote = new Map([
   ...midRowKeys.map((k, i) => [k, { note: midRowNotes[i], voice: "middle" }]),
   ...botRowKeys.map((k, i) => [k, { note: botRowNotes[i], voice: "bottom" }]),
 ]);
+
+console.log("Key to Note: ", keyToNote);
 
 export default function Home() {
   const voices = usePianoVoices();
@@ -82,5 +91,4 @@ export default function Home() {
       <p>Left → right increases pitch in each row.</p>
     </main>
   );
-  2;
 }
