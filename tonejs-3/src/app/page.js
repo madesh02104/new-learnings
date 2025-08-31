@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { INSTRUMENTS } from "../lib/instruments";
-import { noteMap, indexMap } from "../lib/keys";
+import { noteMap, indexMap, drumKeyToNote } from "../lib/keys";
 
 export default function Page() {
   const [selected, setSelected] = useState("piano");
@@ -32,9 +32,18 @@ export default function Page() {
       if (Tone.context.state !== "running") await Tone.start();
       const k = e.key.toLowerCase();
       if (selected === "drums") {
+        const note = drumKeyToNote.get(k);
         const info = indexMap.get(k);
-        if (info && instRef.current.playByRow) {
-          instRef.current.playByRow(info.row, info.i, info.len);
+        if (note && info) {
+          instRef.current.play(
+            note,
+            "8n",
+            undefined,
+            0.95,
+            info.row,
+            info.i,
+            info.len
+          );
         }
       } else {
         const m = noteMap.get(k);

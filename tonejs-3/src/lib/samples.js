@@ -1,12 +1,16 @@
 // Define which note files you will place under public/audio/<instrument>/
 // You should create files matching these names (e.g., public/audio/piano/C3.ogg)
 
+// Point to your CDN repo on jsDelivr. Use @main or a tag like @v1
+const CDN_BASE =
+  "https://cdn.jsdelivr.net/gh/madesh02104/typejam-audio-files@main";
+
 export const BASES = {
-  piano: "/audio/piano/",
-  guitar: "/audio/guitar/",
-  bass: "/audio/bass/",
-  violin: "/audio/violin/",
-  drums: "/audio/drums/",
+  piano: `${CDN_BASE}/audio/piano/`,
+  guitar: `${CDN_BASE}/audio/guitar/`,
+  bass: `${CDN_BASE}/audio/bass/`,
+  violin: `${CDN_BASE}/audio/violin/`,
+  drums: `${CDN_BASE}/audio/drums/`,
 };
 
 // Minimal multi-sample sets (C / F / A# across 3 octaves)

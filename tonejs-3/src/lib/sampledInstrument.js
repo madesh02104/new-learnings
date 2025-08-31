@@ -63,9 +63,28 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
       // To "tone down" to the right, invert: const p = 1 - pos
       const p = pos;
 
-      const velocity = lerp(0.8, 1.0, p);
-      const cutoff = lerp(1000, 3200, p);
-      const wet = lerp(0.05, 0.2, p);
+      let velocity = lerp(0.8, 1.0, p);
+      let cutoff = lerp(1000, 3200, p);
+      let wet = lerp(0.05, 0.2, p);
+
+      // If this is the drums instrument, shape per-row differently to get 26 distinct timbres
+      const isDrums = baseUrl.includes("/audio/drums/");
+      if (isDrums) {
+        // Map row to brightness direction: top (brighter left->right), mid (neutral), bot (darker left->right)
+        if (row === "top") {
+          cutoff = lerp(2500, 7000, p); // hats/ride get brighter
+          wet = lerp(0.02, 0.15, p);
+          velocity = lerp(0.7, 1.0, p);
+        } else if (row === "mid") {
+          cutoff = lerp(1800, 5200, p); // snares open up
+          wet = lerp(0.03, 0.12, p);
+          velocity = lerp(0.75, 1.0, p);
+        } else {
+          cutoff = lerp(800, 2200, p); // kicks/toms, lower spectrum
+          wet = lerp(0.02, 0.1, p);
+          velocity = lerp(0.8, 1.0, p);
+        }
+      }
 
       const s = row === "top" ? top : row === "bot" ? bot : mid;
       const fx = row === "top" ? topFX : row === "bot" ? botFX : midFX;

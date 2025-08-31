@@ -32,5 +32,21 @@ export const indexMap = new Map([
   ...rows.mid.map((k, i) => [k, { row: "mid", i, len: rows.mid.length }]),
   ...rows.bot.map((k, i) => [k, { row: "bot", i, len: rows.bot.length }]),
 ]);
-// For sampled drums, if you later use Sampler for drums too, you can build a
-// per-key mapping similarly to noteMap but to IDs or note names.
+// Drum key mapping to Sampler pseudo-notes (C1..), covers 26 keys
+// Strategy:
+// - Columns 0..6 use 7 classic kit sounds: [kick,snare,hatC,hatO,tomL,tomM,tomH]
+// - Remaining columns: assign ride/crash as requested
+//   * top row cols 7,8,9: ride
+//   * mid row cols 7,8: crash
+const baseCols = ["C1", "D1", "E1", "F1", "G1", "A1", "B1"]; // 7
+
+export const drumKeyToNote = new Map([
+  // bottom row: 7 keys -> base 7 sounds
+  ...rows.bot.map((k, i) => [k, baseCols[i]]),
+
+  // mid row: 9 keys -> base 7 then crash for last 2 (k,l)
+  ...rows.mid.map((k, i) => [k, i < 7 ? baseCols[i] : "D2"]), // D2 = crash
+
+  // top row: 10 keys -> base 7 then ride for last 3 (i,o,p)
+  ...rows.top.map((k, i) => [k, i < 7 ? baseCols[i] : "C2"]), // C2 = ride
+]);

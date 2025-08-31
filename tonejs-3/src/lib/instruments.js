@@ -1,4 +1,3 @@
-import { makeChromaticDrums } from "./drumsChromatic";
 import { makeSampledInstrument } from "./sampledInstrument";
 import {
   BASES,
@@ -6,6 +5,7 @@ import {
   GUITAR_URLS,
   BASS_URLS,
   VIOLIN_URLS,
+  DRUM_NOTE_TO_FILE,
 } from "./samples";
 
 export const INSTRUMENTS = {
@@ -16,9 +16,18 @@ export const INSTRUMENTS = {
   bass: () =>
     makeSampledInstrument(BASES.bass, BASS_URLS, {
       transpose: 12,
-      rowGainDb: { top: 16, mid: 12, bot: 12 },
+      rowGainDb: { top: 20, mid: 20, bot: 12 },
     }),
-  violin: () => makeSampledInstrument(BASES.violin, VIOLIN_URLS),
-  // Drums: keep 26-key chromatic synth engine (no assets needed)
-  drums: () => makeChromaticDrums(),
+  violin: () =>
+    makeSampledInstrument(BASES.violin, VIOLIN_URLS, {
+      transpose: 12,
+      rowGainDb: { top: 16, mid: 16, bot: 16 },
+    }),
+  // Drums: also use Sampler (one-shots) for unified pipeline
+  drums: () => {
+    const urls = { ...DRUM_NOTE_TO_FILE };
+    return makeSampledInstrument(BASES.drums, urls, {
+      rowGainDb: { top: 16, mid: 16, bot: 16 },
+    });
+  },
 };
