@@ -1,3 +1,5 @@
+// Instruments registry: each function returns a ready-to-play instrument.
+// All instruments use the same Sampler-based engine with per-row FX and per-key modulation.
 import { makeSampledInstrument } from "./sampledInstrument";
 import {
   BASES,
@@ -9,7 +11,7 @@ import {
 } from "./samples";
 
 export const INSTRUMENTS = {
-  // Pitched instruments now use Sampler + per-row FX + per-key modulation
+  // Pitched instruments: Sampler + per-row FX + per-key modulation
   piano: () => makeSampledInstrument(BASES.piano, PIANO_URLS),
   guitar: () => makeSampledInstrument(BASES.guitar, GUITAR_URLS),
   // Boost bass top row, and transpose up one octave to avoid sub‑audible notes
@@ -18,14 +20,13 @@ export const INSTRUMENTS = {
       transpose: 12,
       rowGainDb: { top: 20, mid: 20, bot: 12 },
     }),
-  violin: () =>
-    makeSampledInstrument(BASES.violin, VIOLIN_URLS, {
-      transpose: 12,
-      rowGainDb: { top: 16, mid: 16, bot: 16 },
-    }),
-  // Drums: also use Sampler (one-shots) for unified pipeline
+  violin: () => makeSampledInstrument(BASES.violin, VIOLIN_URLS),
+  // Drums: Sampler one-shots; columns map to kit pieces; row/col modulates tone
   drums: () => {
     const urls = { ...DRUM_NOTE_TO_FILE };
+    console.groupCollapsed("[TypeJam][instruments] create drums instrument");
+    console.log({ baseUrl: BASES.drums, urls });
+    console.groupEnd();
     return makeSampledInstrument(BASES.drums, urls, {
       rowGainDb: { top: 16, mid: 16, bot: 16 },
     });

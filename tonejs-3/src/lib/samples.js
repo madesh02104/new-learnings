@@ -1,5 +1,6 @@
-// Define which note files you will place under public/audio/<instrument>/
-// You should create files matching these names (e.g., public/audio/piano/C3.ogg)
+// Minimal mapping of note-name -> filename per instrument.
+// The app combines these with a baseUrl (CDN) to build full URLs for Tone.Sampler.
+// Keep names consistent across your CDN repo.
 
 // Point to your CDN repo on jsDelivr. Use @main or a tag like @v1
 const CDN_BASE =
@@ -12,6 +13,11 @@ export const BASES = {
   violin: `${CDN_BASE}/audio/violin/`,
   drums: `${CDN_BASE}/audio/drums/`,
 };
+
+// Debug: show where samples are loaded from
+console.groupCollapsed("[TypeJam][samples] CDN and base URLs");
+console.log({ CDN_BASE, BASES });
+console.groupEnd();
 
 // Minimal multi-sample sets (C / F / A# across 3 octaves)
 export const PIANO_URLS = {
@@ -74,3 +80,12 @@ export const DRUM_NOTE_TO_FILE = {
   C2: "ride.mp3",
   D2: "crash.mp3",
 };
+
+// Debug: show instrument URL maps (keys only for brevity)
+console.groupCollapsed("[TypeJam][samples] URL maps (note->file)");
+console.log("piano", Object.keys(PIANO_URLS));
+console.log("guitar", Object.keys(GUITAR_URLS));
+console.log("bass", Object.keys(BASS_URLS));
+console.log("violin", Object.keys(VIOLIN_URLS));
+console.log("drums", DRUM_NOTE_TO_FILE);
+console.groupEnd();

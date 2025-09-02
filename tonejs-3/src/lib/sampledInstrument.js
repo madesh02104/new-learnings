@@ -1,4 +1,10 @@
 import * as Tone from "tone";
+// Core Sampler-based engine used by every instrument.
+// Responsibilities:
+// - Build three Tone.Sampler instances (top/mid/bot row)
+// - Route each through a distinct FX chain (EQ/Filter/Reverb + Comp/Limiter)
+// - On each keypress, compute left→right position to modulate brightness/space/velocity
+// - Trigger the appropriate Sampler with a musical duration
 
 // Sampler + per-row FX + per-key parameter modulation
 export function makeSampledInstrument(baseUrl, urls, options = {}) {
@@ -9,11 +15,19 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
   const mid = mk();
   const bot = mk();
 
+  console.groupCollapsed("[TypeJam][engine] create Samplers (top/mid/bot)");
+  console.log({ baseUrl, urls });
+  console.groupEnd();
+
   // Per-row output gain (boost a bit to avoid very low perceived level)
   const rowGainDb = options.rowGainDb || { top: 12, mid: 12, bot: 12 };
   const topVol = new Tone.Volume(rowGainDb.top);
   const midVol = new Tone.Volume(rowGainDb.mid);
   const botVol = new Tone.Volume(rowGainDb.bot);
+
+  console.groupCollapsed("[TypeJam][engine] row gains (dB)");
+  console.log(rowGainDb);
+  console.groupEnd();
 
   // Per-row dynamics to increase perceived loudness
   const topComp = new Tone.Compressor(-12, 3);
@@ -44,6 +58,10 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
   chain(top, topVol, topFX, topComp, topLim);
   chain(mid, midVol, midFX, midComp, midLim);
   chain(bot, botVol, botFX, botComp, botLim);
+
+  console.groupCollapsed("[TypeJam][engine] FX chains setup");
+  console.log({ topFX, midFX, botFX });
+  console.groupEnd();
 
   const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -89,6 +107,21 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
       const s = row === "top" ? top : row === "bot" ? bot : mid;
       const fx = row === "top" ? topFX : row === "bot" ? botFX : midFX;
 
+      console.groupCollapsed("[TypeJam][play] input & derived params");
+      console.log({
+        note,
+        dur,
+        row,
+        i,
+        len,
+        pos,
+        isDrums,
+        velocity,
+        cutoff,
+        wet,
+      });
+      console.groupEnd();
+
       fx.forEach((node) => {
         if (node instanceof Tone.Filter) node.frequency.rampTo(cutoff, 0.02);
         if (node instanceof Tone.Reverb) node.wet.rampTo(wet, 0.02);
@@ -100,6 +133,7 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
         transpose === 0
           ? note
           : Tone.Frequency(note).transpose(transpose).toNote();
+      console.log("[TypeJam][play] triggering Sampler", { resolvedNote: nn });
       s.triggerAttackRelease(nn, dur, undefined, velocity);
     },
     dispose: () => {
