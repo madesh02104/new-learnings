@@ -18,6 +18,7 @@ import {
   clearRecordings,
 } from "../lib/storage"; // localStorage persistence
 import RecordingsList from "../components/RecordingsList";
+import JamBoard from "../components/JamBoard";
 
 export default function Page() {
   // Which instrument is currently selected in the UI
@@ -33,6 +34,9 @@ export default function Page() {
   // Use useRef for currentRecording to avoid state updates during recording
   const currentRecordingRef = useRef(createEmptyRecording());
   const [recordings, setRecordings] = useState([]);
+
+  // UI navigation state
+  const [currentView, setCurrentView] = useState("recording"); // "recording" or "jamboard"
 
   // ============================================================================
   // LOAD RECORDINGS FROM LOCALSTORAGE ON PAGE LOAD
@@ -233,11 +237,110 @@ export default function Page() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selected, ready, isRecording, recordingStartTime]);
 
-  // Render: instrument selector + readiness + brief usage hint
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
+  if (currentView === "jamboard") {
+    return (
+      <div
+        style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+      >
+        {/* Navigation Header */}
+        <div
+          style={{
+            padding: "16px",
+            backgroundColor: "#2a2a2a",
+            borderBottom: "1px solid #333",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <h1 style={{ margin: 0, color: "#fff", fontSize: "24px" }}>
+              🎵 TypeJam - Jam Board
+            </h1>
+            <button
+              onClick={() => setCurrentView("recording")}
+              style={{
+                background: "#444",
+                border: "1px solid #666",
+                borderRadius: "4px",
+                color: "#fff",
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
+              ← Back to Recording
+            </button>
+          </div>
+          <div style={{ color: "#888", fontSize: "14px" }}>
+            {recordings.length} recordings available
+          </div>
+        </div>
+
+        {/* Jam Board */}
+        <div style={{ flex: 1 }}>
+          <JamBoard recordings={recordings} />
+        </div>
+      </div>
+    );
+  }
+
+  // Recording Studio View
   return (
     <main style={{ padding: 24 }}>
-      <h1>Type to play</h1>
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+      {/* Navigation Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
+        <h1>🎹 TypeJam - Recording Studio</h1>
+        <button
+          onClick={() => setCurrentView("jamboard")}
+          style={{
+            background: recordings.length > 0 ? "#0066cc" : "#666",
+            border: "none",
+            borderRadius: "6px",
+            color: "white",
+            padding: "12px 20px",
+            cursor: recordings.length > 0 ? "pointer" : "not-allowed",
+            fontSize: "16px",
+            fontWeight: "500",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+          disabled={recordings.length === 0}
+          title={
+            recordings.length === 0
+              ? "Create some recordings first!"
+              : "Open Jam Board"
+          }
+        >
+          🎵 Open Jam Board
+          {recordings.length > 0 && (
+            <span style={{ fontSize: "12px", opacity: 0.8 }}>
+              ({recordings.length})
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Recording Interface */}
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          alignItems: "center",
+          marginBottom: "16px",
+        }}
+      >
         <label>
           Instrument:
           <select
