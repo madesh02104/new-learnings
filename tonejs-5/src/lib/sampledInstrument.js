@@ -15,38 +15,49 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
   const mid = mk();
   const bot = mk();
 
-  console.groupCollapsed("[TypeJam][engine] create Samplers (top/mid/bot)");
-  console.log({ baseUrl, urls });
-  console.groupEnd();
+  // Per-row volume controls
+  const topVol = new Tone.Volume(-6);
+  const midVol = new Tone.Volume(-3);
+  const botVol = new Tone.Volume(-6);
 
-  // Per-row output gain (boost a bit to avoid very low perceived level)
-  const rowGainDb = options.rowGainDb || { top: 12, mid: 12, bot: 12 };
-  const topVol = new Tone.Volume(rowGainDb.top);
-  const midVol = new Tone.Volume(rowGainDb.mid);
-  const botVol = new Tone.Volume(rowGainDb.bot);
-
-  console.groupCollapsed("[TypeJam][engine] row gains (dB)");
-  console.log(rowGainDb);
-  console.groupEnd();
-
-  // Per-row dynamics to increase perceived loudness
-  const topComp = new Tone.Compressor(-12, 3);
-  const midComp = new Tone.Compressor(-12, 3);
-  const botComp = new Tone.Compressor(-12, 3);
-  const topLim = new Tone.Limiter(-1);
-  const midLim = new Tone.Limiter(-1);
-  const botLim = new Tone.Limiter(-1);
-
-  // Row FX chains
+  // Per-row FX chains
   const topFX = [
-    new Tone.EQ3({ low: -2, mid: 0, high: 2 }),
-    new Tone.Reverb({ decay: 1.4, wet: 0.15 }),
+    new Tone.Filter(1200, "lowpass"),
+    new Tone.Reverb({ decay: 0.8, wet: 0.08 }),
   ];
-  const midFX = [new Tone.Reverb({ decay: 1.2, wet: 0.1 })];
+  const midFX = [
+    new Tone.Filter(800, "lowpass"),
+    new Tone.Reverb({ decay: 1.2, wet: 0.1 }),
+  ];
   const botFX = [
     new Tone.Filter(900, "lowpass"),
     new Tone.Reverb({ decay: 1.6, wet: 0.12 }),
   ];
+
+  // Per-row dynamics processing
+  const topComp = new Tone.Compressor({
+    threshold: -24,
+    ratio: 3,
+    attack: 0.003,
+    release: 0.1,
+  });
+  const midComp = new Tone.Compressor({
+    threshold: -20,
+    ratio: 2.5,
+    attack: 0.003,
+    release: 0.1,
+  });
+  const botComp = new Tone.Compressor({
+    threshold: -18,
+    ratio: 2,
+    attack: 0.003,
+    release: 0.1,
+  });
+
+  // Per-row limiters
+  const topLim = new Tone.Limiter(-0.1);
+  const midLim = new Tone.Limiter(-0.1);
+  const botLim = new Tone.Limiter(-0.1);
 
   const chain = (n, vol, fx, comp, lim) => {
     if (fx.length) {
@@ -60,23 +71,18 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
   chain(bot, botVol, botFX, botComp, botLim);
 
   console.groupCollapsed("[TypeJam][engine] FX chains setup");
-  console.log({ topFX, midFX, botFX });
-  console.groupEnd();
-
-  const lerp = (a, b, t) => a + (b - a) * t;
 
   return {
-    ensureReady: () => Tone.loaded(),
+    ensureReady: async () => {
+      await Promise.all([top.loaded, mid.loaded, bot.loaded]);
+    },
     // row: 'top'|'mid'|'bot' ; i,len for gradient (0..len-1)
-    play: (
-      note,
-      dur = "8n",
-      _time,
-      _vel = 0.9,
-      row = "mid",
-      i = 0,
-      len = 1
-    ) => {
+    play: (note, dur = "8n", time, _vel = 0.9, row = "mid", i = 0, len = 1) => {
+      // Check if samplers are ready before playing
+      if (!top.loaded || !mid.loaded || !bot.loaded) {
+        console.warn("[TypeJam][play] Samplers not ready yet");
+        return;
+      }
       const pos = len > 1 ? i / (len - 1) : 0; // 0 left → 1 right
       // To "tone down" to the right, invert: const p = 1 - pos
       const p = pos;
@@ -92,66 +98,66 @@ export function makeSampledInstrument(baseUrl, urls, options = {}) {
         if (row === "top") {
           cutoff = lerp(2500, 7000, p); // hats/ride get brighter
           wet = lerp(0.02, 0.15, p);
-          velocity = lerp(0.7, 1.0, p);
-        } else if (row === "mid") {
-          cutoff = lerp(1800, 5200, p); // snares open up
-          wet = lerp(0.03, 0.12, p);
-          velocity = lerp(0.75, 1.0, p);
-        } else {
-          cutoff = lerp(800, 2200, p); // kicks/toms, lower spectrum
-          wet = lerp(0.02, 0.1, p);
-          velocity = lerp(0.8, 1.0, p);
+        } else if (row === "bot") {
+          cutoff = lerp(400, 1200, p); // kick/snare get darker
+          wet = lerp(0.01, 0.08, p);
         }
+        // mid row stays neutral
       }
 
-      const s = row === "top" ? top : row === "bot" ? bot : mid;
-      const fx = row === "top" ? topFX : row === "bot" ? botFX : midFX;
-
       console.groupCollapsed("[TypeJam][play] input & derived params");
-      console.log({
-        note,
-        dur,
-        row,
-        i,
-        len,
-        pos,
-        isDrums,
-        velocity,
-        cutoff,
-        wet,
-      });
+      console.log("note", note, "dur", dur, "time", time, "vel", _vel);
+      console.log("row", row, "i", i, "len", len, "pos", pos, "p", p);
+      console.log("velocity", velocity, "cutoff", cutoff, "wet", wet);
       console.groupEnd();
 
-      fx.forEach((node) => {
-        if (node instanceof Tone.Filter) node.frequency.rampTo(cutoff, 0.02);
-        if (node instanceof Tone.Reverb) node.wet.rampTo(wet, 0.02);
-        if (node instanceof Tone.EQ3) node.high.value = lerp(0, 3, p);
-      });
+      // Apply transpose
+      const nn = Tone.Frequency(note).transpose(transpose).toNote();
 
-      // Apply transpose to keep within sample range when needed
-      const nn =
-        transpose === 0
-          ? note
-          : Tone.Frequency(note).transpose(transpose).toNote();
+      // Select sampler and FX chain based on row
+      let sampler, vol, fx, comp, lim;
+      if (row === "top") {
+        sampler = top;
+        vol = topVol;
+        fx = topFX;
+        comp = topComp;
+        lim = topLim;
+      } else if (row === "bot") {
+        sampler = bot;
+        vol = botVol;
+        fx = botFX;
+        comp = botComp;
+        lim = botLim;
+      } else {
+        // mid (default)
+        sampler = mid;
+        vol = midVol;
+        fx = midFX;
+        comp = midComp;
+        lim = midLim;
+      }
+
+      // Apply dynamic parameters
+      vol.volume.value = Tone.gainToDb(velocity);
+      if (fx.length >= 1) fx[0].frequency.value = cutoff; // Filter
+      if (fx.length >= 2) fx[1].wet.value = wet; // Reverb
+
       console.log("[TypeJam][play] triggering Sampler", { resolvedNote: nn });
-      s.triggerAttackRelease(nn, dur, undefined, velocity);
+
+      // Trigger the sampler
+      sampler.triggerAttackRelease(nn, dur, time, velocity);
     },
     dispose: () => {
-      top.dispose();
-      mid.dispose();
-      bot.dispose();
-      topVol.dispose();
-      midVol.dispose();
-      botVol.dispose();
-      topComp.dispose();
-      midComp.dispose();
-      botComp.dispose();
-      topLim.dispose();
-      midLim.dispose();
-      botLim.dispose();
-      topFX.forEach((f) => f.dispose());
-      midFX.forEach((f) => f.dispose());
-      botFX.forEach((f) => f.dispose());
+      [top, mid, bot].forEach((s) => s.dispose());
+      [topVol, midVol, botVol].forEach((v) => v.dispose());
+      [...topFX, ...midFX, ...botFX].forEach((f) => f.dispose());
+      [topComp, midComp, botComp].forEach((c) => c.dispose());
+      [topLim, midLim, botLim].forEach((l) => l.dispose());
     },
   };
+}
+
+// Utility: linear interpolation
+function lerp(a, b, t) {
+  return a + (b - a) * t;
 }

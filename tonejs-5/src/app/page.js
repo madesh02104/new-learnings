@@ -19,6 +19,8 @@ import {
 } from "../lib/storage"; // localStorage persistence
 import RecordingsList from "../components/RecordingsList";
 import JamBoard from "../components/JamBoard";
+import TransportControls from "../components/TransportControls";
+import { createJamSession } from "../lib/jamSession";
 
 export default function Page() {
   // Which instrument is currently selected in the UI
@@ -34,9 +36,12 @@ export default function Page() {
   // Use useRef for currentRecording to avoid state updates during recording
   const currentRecordingRef = useRef(createEmptyRecording());
   const [recordings, setRecordings] = useState([]);
-
-  // UI navigation state
-  const [currentView, setCurrentView] = useState("recording"); // "recording" or "jamboard"
+  // Jam board state
+  const [clips, setClips] = useState([]);
+  const [pxPerSec, setPxPerSec] = useState(100);
+  const [snapSec, setSnapSec] = useState(0.5);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const jamSessionRef = useRef(null);
 
   // ============================================================================
   // LOAD RECORDINGS FROM LOCALSTORAGE ON PAGE LOAD
@@ -101,6 +106,65 @@ export default function Page() {
       // The useEffect will automatically save the updated list to localStorage
       return updatedList;
     });
+  };
+
+  // Jam board: helpers
+  const recordingsById = useRef(new Map());
+  useEffect(() => {
+    const map = new Map();
+    for (const r of recordings) map.set(r.id, r);
+    recordingsById.current = map;
+  }, [recordings]);
+
+  const handleCreateClip = ({
+    recordingId,
+    trackIndex,
+    startTimeSec,
+    durationSec,
+  }) => {
+    const newClip = {
+      id: crypto.randomUUID(),
+      recordingId,
+      trackIndex,
+      startTimeSec,
+      durationSec,
+      name: recordingsById.current.get(recordingId)?.instrument || "rec",
+    };
+    setClips((prev) => [...prev, newClip]);
+  };
+
+  const handleUpdateClip = (clipId, patch) => {
+    setClips((prev) =>
+      prev.map((c) => (c.id === clipId ? { ...c, ...patch } : c))
+    );
+  };
+
+  const handleDeleteClip = (clipId) => {
+    setClips((prev) => prev.filter((c) => c.id !== clipId));
+  };
+
+  const ensureJamSession = () => {
+    if (!jamSessionRef.current) {
+      jamSessionRef.current = createJamSession(recordingsById.current);
+    }
+    return jamSessionRef.current;
+  };
+
+  const onPlayPause = async () => {
+    const session = ensureJamSession();
+    if (isPlaying) {
+      session.pause();
+      setIsPlaying(false);
+    } else {
+      await session.play(clips);
+      setIsPlaying(true);
+    }
+  };
+
+  const onStop = () => {
+    const session = ensureJamSession();
+    session.stop();
+    setIsPlaying(false);
   };
 
   // Clear all recordings
@@ -237,116 +301,17 @@ export default function Page() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selected, ready, isRecording, recordingStartTime]);
 
-  // ============================================================================
-  // RENDER
-  // ============================================================================
-
-  if (currentView === "jamboard") {
-    return (
-      <div
-        style={{ height: "100vh", display: "flex", flexDirection: "column" }}
-      >
-        {/* Navigation Header */}
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "#2a2a2a",
-            borderBottom: "1px solid #333",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <h1 style={{ margin: 0, color: "#fff", fontSize: "24px" }}>
-              🎵 TypeJam - Jam Board
-            </h1>
-            <button
-              onClick={() => setCurrentView("recording")}
-              style={{
-                background: "#444",
-                border: "1px solid #666",
-                borderRadius: "4px",
-                color: "#fff",
-                padding: "8px 16px",
-                cursor: "pointer",
-              }}
-            >
-              ← Back to Recording
-            </button>
-          </div>
-          <div style={{ color: "#888", fontSize: "14px" }}>
-            {recordings.length} recordings available
-          </div>
-        </div>
-
-        {/* Jam Board */}
-        <div style={{ flex: 1 }}>
-          <JamBoard recordings={recordings} />
-        </div>
-      </div>
-    );
-  }
-
-  // Recording Studio View
+  // Render: instrument selector + readiness + brief usage hint
   return (
-    <main style={{ padding: 24 }}>
-      {/* Navigation Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
-        <h1>🎹 TypeJam - Recording Studio</h1>
-        <button
-          onClick={() => setCurrentView("jamboard")}
-          style={{
-            background: recordings.length > 0 ? "#0066cc" : "#666",
-            border: "none",
-            borderRadius: "6px",
-            color: "white",
-            padding: "12px 20px",
-            cursor: recordings.length > 0 ? "pointer" : "not-allowed",
-            fontSize: "16px",
-            fontWeight: "500",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-          disabled={recordings.length === 0}
-          title={
-            recordings.length === 0
-              ? "Create some recordings first!"
-              : "Open Jam Board"
-          }
-        >
-          🎵 Open Jam Board
-          {recordings.length > 0 && (
-            <span style={{ fontSize: "12px", opacity: 0.8 }}>
-              ({recordings.length})
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Recording Interface */}
-      <div
-        style={{
-          display: "flex",
-          gap: 16,
-          alignItems: "center",
-          marginBottom: "16px",
-        }}
-      >
+    <main className="p-4 h-screen w-screen box-border">
+      <h1 className="text-xl font-semibold mb-3">Type to play</h1>
+      <div className="flex gap-4 items-center">
         <label>
           Instrument:
           <select
             value={selected}
             onChange={(e) => setSelected(e.target.value)}
-            style={{ marginLeft: 8 }}
+            className="ml-2 border rounded px-2 py-1"
           >
             <option value="piano">Piano</option>
             <option value="guitar">Guitar</option>
@@ -359,28 +324,51 @@ export default function Page() {
         <button
           onClick={toggleRecording}
           disabled={!ready}
-          style={{
-            background: isRecording ? "red" : "white",
-            borderRadius: "50%",
-            width: 24,
-            height: 24,
-            border: "1px solid #ccc",
-            cursor: ready ? "pointer" : "not-allowed",
-          }}
+          className={`w-6 h-6 rounded-full border ${
+            isRecording ? "bg-red-500" : "bg-white"
+          }`}
           title={isRecording ? "Stop Recording" : "Start Recording"}
         />
       </div>
 
-      <p>{ready ? "Ready" : "Loading..."}</p>
-      <p>Letter keys only: Q–P, A–L, Z–M. Drums: Z–M, J/K.</p>
+      <p className="text-sm mt-2">{ready ? "Ready" : "Loading..."}</p>
+      <p className="text-sm">
+        Letter keys only: Q–P, A–L, Z–M. Drums: Z–M, J/K.
+      </p>
 
-      {/* Recording list */}
-      <RecordingsList
-        recordings={recordings}
-        onDelete={handleDeleteRecording}
-        onClearAll={handleClearAllRecordings}
-        currentInstrument={selected}
-      />
+      <div className="mt-4 grid grid-cols-[340px_1fr] gap-4 h-[calc(100vh-140px)]">
+        <div className="overflow-auto">
+          <RecordingsList
+            recordings={recordings}
+            onDelete={handleDeleteRecording}
+            onClearAll={handleClearAllRecordings}
+            currentInstrument={selected}
+          />
+        </div>
+        <div className="flex flex-col h-full">
+          <TransportControls
+            isPlaying={isPlaying}
+            onPlayPause={onPlayPause}
+            onStop={onStop}
+            pxPerSec={pxPerSec}
+            onChangePxPerSec={setPxPerSec}
+            snapSec={snapSec}
+            onChangeSnapSec={setSnapSec}
+          />
+          <div className="mt-2 flex-1">
+            <JamBoard
+              clips={clips}
+              onCreateClip={handleCreateClip}
+              onUpdateClip={handleUpdateClip}
+              onDeleteClip={handleDeleteClip}
+              pxPerSec={pxPerSec}
+              numTracks={10}
+              snapSec={snapSec}
+              isActive={isPlaying}
+            />
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

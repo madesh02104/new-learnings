@@ -62,11 +62,14 @@ export default function RecordingsList({ recordings, onDelete, onClearAll }) {
     onDelete(recordingId);
   };
 
-  if (!recordings.length) {
-    return (
-      <p>No recordings yet. Press the record button and play some notes!</p>
+  const onDragStartRecording = (e, recording) => {
+    e.dataTransfer.setData("application/x-recording-id", recording.id);
+    e.dataTransfer.setData(
+      "application/x-recording-duration-ms",
+      String(recording.duration || 0)
     );
-  }
+    e.dataTransfer.effectAllowed = "copy";
+  };
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -109,6 +112,8 @@ export default function RecordingsList({ recordings, onDelete, onClearAll }) {
               border: "1px solid #ccc",
               borderRadius: 4,
             }}
+            draggable
+            onDragStart={(e) => onDragStartRecording(e, recording)}
           >
             <button
               onClick={() => togglePlayback(recording.id)}
